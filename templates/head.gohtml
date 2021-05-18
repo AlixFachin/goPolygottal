@@ -1,0 +1,12 @@
+{{define "mainPage"}}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>{{if .title }} {{ .title }} {{ else }} Recruiting Companies DB {{end}} </title>
+    <link rel="stylesheet" href="/static/index.css">
+  </head>
+  <body>
+    {{template "bodyContent"  }}
+  </body>
+</html>
+{{end}}

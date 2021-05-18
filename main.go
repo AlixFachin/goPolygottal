@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"text/template"
 
 	"github.com/gorilla/mux"
 )
@@ -23,6 +24,12 @@ type Company struct {
 
 // Storage of all the objects
 var Companies []Company
+
+// Premature optimization is the root of all evil -> let's get dirty first.
+var homeTemplate = template.Must(template.ParseFiles("templates/head.gohtml", "templates/index.gohtml"))
+var allCompaniesTemplate = template.Must(template.ParseFiles("templates/allCompanies.gohtml"))
+
+//var templates = template.Must(template.ParseFiles("templates/head.gohtml", "templates/index.gohtml", "templates/allCompanies.gohtml"))
 
 const PORT int = 8000
 
@@ -50,7 +57,7 @@ func getOneCompany(id string) (*Company, error) {
 }
 
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-// HTTP-QUERIES-RELATED HANDLERS
+// API-QUERIES-RELATED HANDLERS
 
 func handleAllCompanies(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Endpoint hit -> Download all companies")
@@ -70,10 +77,35 @@ func handleSingleCompany(w http.ResponseWriter, r *http.Request) {
 }
 
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+// TEMPLATED PAGES
+
+func handleRootPage(w http.ResponseWriter, r *http.Request) {
+	err := homeTemplate.ExecuteTemplate(w, "mainPage", nil)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+}
+
+func handleAllCompaniesPage(w http.ResponseWriter, r *http.Request) {
+	type AllCompaniesDataType struct {
+		AllCompanies []Company
+	}
+	var allCompaniesData AllCompaniesDataType
+	allCompaniesData.AllCompanies = getAllCompanies()
+
+	err := allCompaniesTemplate.Execute(w, &allCompaniesData)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+}
+
+// -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
 func setupServer() {
 	myRouter := mux.NewRouter().StrictSlash(true)
 	// Defining routes for templated pages
+	myRouter.HandleFunc("/", handleRootPage)
+	myRouter.HandleFunc("/allCompanies", handleAllCompaniesPage)
 
 	// api routes using a subrouter
 	apiRouter := myRouter.PathPrefix("/api/v1/").Subrouter()
