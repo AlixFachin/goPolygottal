@@ -61,6 +61,19 @@ func addOneCompany(newCompany *Company) {
 	Companies = append(Companies, *newCompany)
 }
 
+func deleteOneCompany(companyId string) (*Company, error) {
+
+	for index, company := range Companies {
+		if company.Id == companyId {
+			Companies = append(Companies[:index], Companies[index+1:]...)
+			return &company, nil
+		}
+	}
+	// Not found!
+	return &Company{}, fmt.Errorf("company of id=%v not found", companyId)
+
+}
+
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 // API-QUERIES-RELATED HANDLERS
 
@@ -94,6 +107,17 @@ func apiCreateNewCompany(w http.ResponseWriter, r *http.Request) {
 	addOneCompany(&company)
 	json.NewEncoder(w).Encode(company)
 
+}
+
+func apiDeleteOneCompany(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("DELETE Endpoint hit -> Delete a single company")
+	vars := mux.Vars(r)
+	company, err := deleteOneCompany(vars["id"])
+	if err != nil {
+		http.NotFound(w, r)
+		return
+	}
+	json.NewEncoder(w).Encode(company)
 }
 
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
@@ -130,7 +154,8 @@ func setupServer() {
 	// api routes using a subrouter
 	apiRouter := myRouter.PathPrefix("/api/v1/").Subrouter()
 	apiRouter.HandleFunc("/all", handleAllCompanies)
-	apiRouter.HandleFunc("/company/{id}", handleSingleCompany)
+	apiRouter.HandleFunc("/company/{id}", handleSingleCompany).Methods("GET")
+	apiRouter.HandleFunc("/company/{id}", apiDeleteOneCompany).Methods("DELETE")
 	apiRouter.HandleFunc("/company", apiCreateNewCompany).Methods("POST")
 
 	// Static files
