@@ -8,6 +8,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"text/template"
@@ -56,6 +57,10 @@ func getOneCompany(id string) (*Company, error) {
 	return &Company{}, fmt.Errorf("company of id=%v not found", id)
 }
 
+func addOneCompany(newCompany *Company) {
+	Companies = append(Companies, *newCompany)
+}
+
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 // API-QUERIES-RELATED HANDLERS
 
@@ -66,6 +71,7 @@ func handleAllCompanies(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleSingleCompany(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("Endpoint hit -> Download a single companies")
 	vars := mux.Vars(r)
 	company, err := getOneCompany(vars["id"])
 	if err != nil {
@@ -74,6 +80,20 @@ func handleSingleCompany(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	json.NewEncoder(w).Encode(&company)
+}
+
+func apiCreateNewCompany(w http.ResponseWriter, r *http.Request) {
+	var company Company
+	fmt.Println("POST request - create a new company")
+
+	reqBody, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+	json.Unmarshal(reqBody, &company)
+	addOneCompany(&company)
+	json.NewEncoder(w).Encode(company)
+
 }
 
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
@@ -111,6 +131,7 @@ func setupServer() {
 	apiRouter := myRouter.PathPrefix("/api/v1/").Subrouter()
 	apiRouter.HandleFunc("/all", handleAllCompanies)
 	apiRouter.HandleFunc("/company/{id}", handleSingleCompany)
+	apiRouter.HandleFunc("/company", apiCreateNewCompany).Methods("POST")
 
 	// Static files
 	fs := http.FileServer(http.Dir("assets/"))
