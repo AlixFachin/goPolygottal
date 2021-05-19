@@ -26,8 +26,8 @@ type Company struct {
 var Companies []Company
 
 // Premature optimization is the root of all evil -> let's get dirty first.
-var homeTemplate = template.Must(template.ParseFiles("templates/head.gohtml", "templates/index.gohtml"))
-var allCompaniesTemplate = template.Must(template.ParseFiles("templates/allCompanies.gohtml"))
+var homeTemplate = template.Must(template.ParseFiles("templates/base.gohtml", "templates/index.gohtml"))
+var allCompaniesTemplate = template.Must(template.ParseFiles("templates/base.gohtml", "templates/allCompanies.gohtml"))
 
 //var templates = template.Must(template.ParseFiles("templates/head.gohtml", "templates/index.gohtml", "templates/allCompanies.gohtml"))
 
@@ -93,7 +93,7 @@ func handleAllCompaniesPage(w http.ResponseWriter, r *http.Request) {
 	var allCompaniesData AllCompaniesDataType
 	allCompaniesData.AllCompanies = getAllCompanies()
 
-	err := allCompaniesTemplate.Execute(w, &allCompaniesData)
+	err := allCompaniesTemplate.ExecuteTemplate(w, "mainPage", &allCompaniesData)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
@@ -111,6 +111,10 @@ func setupServer() {
 	apiRouter := myRouter.PathPrefix("/api/v1/").Subrouter()
 	apiRouter.HandleFunc("/all", handleAllCompanies)
 	apiRouter.HandleFunc("/company/{id}", handleSingleCompany)
+
+	// Static files
+	fs := http.FileServer(http.Dir("assets/"))
+	myRouter.PathPrefix("/static/").Handler(http.StripPrefix("/static/", fs))
 
 	// Starting server
 	fmt.Printf("Listening on port %v\n", PORT)

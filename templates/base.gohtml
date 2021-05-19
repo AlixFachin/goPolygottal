@@ -1,0 +1,25 @@
+{{define "mainPage"}}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Main DB Editor</title>
+    <link rel="stylesheet" href="/static/index.css">
+  </head>
+  <body>
+    <div class="mainContent">
+      {{ template "bodyContent" . }}
+    </div>
+
+    <canvas class="background"></canvas>
+    <script src="/static/particles.js"></script>
+    <script>
+      window.onload=function() {
+        Particles.init({
+          selector: '.background',
+          connectParticles: true
+        });
+      };
+    </script>
+  </body>
+</html>
+{{end}}
