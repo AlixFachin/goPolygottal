@@ -1,12 +1,13 @@
 {{define "bodyContent" }}
 
-<h1> List of all the companies inside this</h1>
-  <ul>
-    {{ range .AllCompanies}}
-    <li>
-      {{ .ID }}: <span class="name">{{.Name}}</span> <a href="{{ .Homepage }}"> {{.Name}} </a> - {{ .Description }}
-    </li>
-    {{end}}
-  </ul>
-
+<div class="centeredPanel">
+  <h1> List of all the companies inside the database</h1>
+    <ul>
+      {{ range .AllCompanies}}
+      <li>
+        ({{.ID}}) <a href="/company/{{.ID}}"> {{.Name}} </a> - {{ .Description }}
+      </li>
+      {{end}}
+    </ul>
+</div>
   {{end}}

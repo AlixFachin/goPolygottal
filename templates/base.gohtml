@@ -6,20 +6,13 @@
     <link rel="stylesheet" href="/static/index.css">
   </head>
   <body>
+    <div class="topNav">
+      <a href="/">Main Menu</a>
+    </div>
     <div class="mainContent">
       {{ template "bodyContent" . }}
     </div>
 
-    <canvas class="background"></canvas>
-    <script src="/static/particles.js"></script>
-    <script>
-      window.onload=function() {
-        Particles.init({
-          selector: '.background',
-          connectParticles: true
-        });
-      };
-    </script>
   </body>
 </html>
 {{end}}

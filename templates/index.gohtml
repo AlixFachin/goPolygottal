@@ -1,12 +1,26 @@
 {{define "bodyContent" }}
 
-<body>
-    <h1>Companies Recruiting Software developers in Japan </h1>
+    <div class="centeredPanel">
+      <h1>Companies Recruiting Software developers in Japan </h1>
 
-    <p> This website will contain a list of companies recruiting software developers in Japan </p>
-    <ul>
-      <li><a href="/allCompanies">List of all companies</a></li>
-      <li>Looking at One company</li>
-    </ul> 
-</body>
+      <p> This website will contain a list of companies recruiting software developers in Japan </p>
+      <ul>
+        <li><a href="/allCompanies">List of all companies</a></li>
+      </ul>
+
+      <p class="miniFooter">Thanks to <a href="https://cssgradient.io/gradient-backgrounds/">CSS gradients</a> for the background 
+      and to <a href="https://vincentgarreau.com/particles.js/">particles.js</a> for the cool animation.</p>
+
+    </div>
+
+    <canvas class="background"></canvas>
+    <script src="/static/particles.js"></script>
+    <script>
+      window.onload=function() {
+        Particles.init({
+          selector: '.background',
+          connectParticles: true
+        });
+      };
+    </script>
 {{end}}

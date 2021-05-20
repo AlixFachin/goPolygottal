@@ -11,7 +11,6 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
-	"strconv"
 	"text/template"
 
 	"github.com/gorilla/mux"
@@ -66,6 +65,7 @@ func dbSetup() (db *gorm.DB) {
 // Premature optimization is the root of all evil -> let's get dirty first.
 var homeTemplate = template.Must(template.ParseFiles("templates/base.gohtml", "templates/index.gohtml"))
 var allCompaniesTemplate = template.Must(template.ParseFiles("templates/base.gohtml", "templates/allCompanies.gohtml"))
+var oneCompanyTemplate = template.Must(template.ParseFiles("templates/base.gohtml", "templates/oneCompany.gohtml"))
 
 //var templates = template.Must(template.ParseFiles("templates/head.gohtml", "templates/index.gohtml", "templates/allCompanies.gohtml"))
 
@@ -80,7 +80,7 @@ func getAllCompanies() ([]Company, error) {
 	return companies, nil
 }
 
-func getOneCompany(id uint) (*Company, error) {
+func getOneCompany(id string) (*Company, error) {
 	var company Company
 	result := companyDB.First(&company, id)
 	fmt.Printf("The company retrieved is %v -- result is %v \n", company, result.RowsAffected)
@@ -126,11 +126,7 @@ func apiGetAllCompanies(w http.ResponseWriter, r *http.Request) {
 func apiGetSingleCompany(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Endpoint hit -> Download a single companies")
 	vars := mux.Vars(r)
-	uintID, err1 := strconv.ParseUint(vars["id"], 10, 64)
-	if err1 != nil {
-		http.Error(w, err1.Error(), http.StatusInternalServerError)
-	}
-	company, err := getOneCompany(uint(uintID))
+	company, err := getOneCompany(vars["id"])
 	if err != nil {
 		// Returns a 404 if the corresponding company is not found
 		http.NotFound(w, r)
@@ -192,6 +188,20 @@ func handleAllCompaniesPage(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func handleOneCompanyPage(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	company, err := getOneCompany(vars["id"])
+	if err != nil {
+		// Returns a 404 if the corresponding company is not found
+		http.NotFound(w, r)
+		return
+	}
+	err = oneCompanyTemplate.ExecuteTemplate(w, "mainPage", &company)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+}
+
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 const PORT int = 8000
 
@@ -200,6 +210,7 @@ func setupServer() {
 	// Defining routes for templated pages
 	myRouter.HandleFunc("/", handleRootPage)
 	myRouter.HandleFunc("/allCompanies", handleAllCompaniesPage)
+	myRouter.HandleFunc("/company/{id}", handleOneCompanyPage)
 
 	// api routes using a subrouter
 	apiRouter := myRouter.PathPrefix("/api/v1/").Subrouter()
