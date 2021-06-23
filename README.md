@@ -18,8 +18,12 @@ Thanks to [particles.js](https://vincentgarreau.com/particles.js/) for the cool 
 ## Installation
 1. Clone the repo to your local machine.
 1. Install `PostgreSQL` 
-
-# Endpoints / API Documentation
+1. Create a Postgres database.
+  1. Run `psql` utility
+  1. Run `CREATE DATABASE mydatabase;` (replacing `mydatabase` by your name of choice)
+1. Create a `.env` file storing variables (look at the `example.env` file if you need assistance)
+1. From the terminal, go to the proper folder and run `go run main.go`
+1. With a web browser, visit the page `http://localhost:8000` to see the main page! 🎉
 
 # Next features
 * Using Go's [testing package](https://golang.org/pkg/testing/) to do robust unit tests and integration tests
