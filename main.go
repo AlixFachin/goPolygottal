@@ -11,9 +11,11 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 	"text/template"
 
 	"github.com/gorilla/mux"
+	"github.com/joho/godotenv"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -37,9 +39,9 @@ func seed(db *gorm.DB) {
 	db.Where("1=1").Delete(&Company{})
 
 	Companies := []Company{
-		{Name: "Google", Homepage: "https://careers.google.com/locations/tokyo/?hl=en", Description: "Very big company / FAANG"},
-		{Name: "Degica", Homepage: "https://degica.com", Description: "Payment API specialized in Japan"},
-		{Name: "Wealth Park", Homepage: "https://wealth-park.com", Description: "Digital solutions to property management company"},
+		{Name: "Google", Homepage: "https://careers.google.com/locations/tokyo/?hl=en", Description: "Google it if you don't know"},
+		{Name: "Company B", Homepage: "https://degica.com", Description: "Payment API specialized in Japan"},
+		{Name: "Company C", Homepage: "https://wealth-park.com", Description: "Digital solutions to property management company"},
 	}
 	for _, company := range Companies {
 		result := db.Select("Name", "Homepage", "Description").Create(&company)
@@ -51,7 +53,17 @@ func seed(db *gorm.DB) {
 }
 
 func dbSetup() (db *gorm.DB) {
-	db, err := gorm.Open(postgres.Open("host=localhost user=alixfachin dbname=polyglottal sslmode=disable"), &gorm.Config{
+	err1 := godotenv.Load()
+	if err1 != nil {
+		log.Fatal("Error loading .env file")
+	}
+
+	dbname := os.Getenv("DBNAME")
+	dbuser := os.Getenv("DBUSER")
+	dbhost := os.Getenv("DBHOST")
+	dbconnection := fmt.Sprintf("host=%v user=%v dbname=%v sslmode=disable", dbhost, dbuser, dbname)
+
+	db, err := gorm.Open(postgres.Open(dbconnection), &gorm.Config{
 		Logger: logger.Default.LogMode(logger.Info),
 	})
 	if err != nil {
